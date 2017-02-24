@@ -1,0 +1,53 @@
+/*
+    numPoints       In   Integer
+    p1              In   Integer
+    p2              In   Integer
+    mesh            In   PolygonMesh
+    pointPositions  Out  Vec3[]
+*/
+
+operator calcPositions<<<index>>>(io Vec3 pointPositions[], Scalar p1, Scalar p2, PolygonMesh mesh){
+    Scalar p, x, y, inverseP1, inverseP2;
+    Integer i, a;
+
+    // Get the Mesh Length, Width, BboxMin and BBoxMax    
+    Vec3 bBoxMax = mesh.getBoundingVolume().bBoxGetMax();
+    Vec3 bBoxMin = mesh.getBoundingVolume().bBoxGetMin();
+    Scalar bBoxLen = bBoxMax.x - bBoxMin.x;
+    Scalar bBoxWid = bBoxMax.z - bBoxMin.z;      
+    
+    x = 0;
+    inverseP1=1.0/p1;
+    // calculating the halton Seq for p1
+    for(p=inverseP1, i=index ; i ; p*=inverseP1, i*=inverseP1)
+        if(a = i % p1)
+            x += a * p;
+    x = bBoxMin.x + bBoxLen * x;
+    
+    y = 0;
+    inverseP2 = 1.0/p2;
+    // calculating the halton Seq for p2
+    for(p=inverseP2, i=index; i ; p*=inverseP2, i*=inverseP2)
+        if (a = i % p2)
+            y += a * p;
+   // map it to the plane dimensions in y            
+    y = bBoxMin.z + bBoxWid * y;        
+
+    // populate the x, y    
+    pointPositions[index] = Vec3(x, 0, y);
+}
+
+dfgEntry {
+    //sanity Checks
+    if (   numPoints <= 0
+        || mesh == null
+        || p1 <= 0
+        || p2 <= 0)
+      {
+        pointPositions.resize(0);
+        return;
+      }
+      
+    pointPositions.resize(numPoints);
+    calcPositions<<<numPoints>>>(pointPositions, p1, p2, mesh);
+}

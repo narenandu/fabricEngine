@@ -1,0 +1,38 @@
+require Geometry;
+  
+operator entry() {
+
+      // create a simple polygon mesh
+      PolygonMesh mesh();
+      
+      // begin changes before adding polygons
+      mesh.beginStructureChanges();
+      
+      // create points and set their positions
+      Size firstPoint = mesh.createPoints(4);
+      mesh.setPointPosition( 0, Vec3( 0, 0, 0) );
+      mesh.setPointPosition( 1, Vec3( 1, 0, 0) );
+      mesh.setPointPosition( 2, Vec3( 0, 0, 1) );
+      mesh.setPointPosition( 3, Vec3( 1, 0, 1) );
+      
+      // create a quad
+      mesh.addPolygon( 0, 2, 3, 1 );
+      
+      // end changes bracket (batch update pointPolygons order)
+      mesh.endStructureChanges();
+      
+      // generate default normals
+      mesh.recomputePointNormals();
+      
+      // print the resulting structure
+      for( Size i = 0; i < mesh.polygonCount(); ++i ) {
+        report("Polygon " + i + ":");
+        for( Size j = 0; j < mesh.getPolygonSize(i); ++j ) {
+          UInt32 point = mesh.getPolygonPoint( i, j );
+          report( "  Point " + point 
+                + ": pos=" + mesh.getPointPosition(point) 
+                + " normal=" + mesh.getPointNormal(point) );
+        }
+      }
+  
+}
